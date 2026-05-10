@@ -1,0 +1,7 @@
+.git
+.github
+terraform/
+helm/
+k8s/
+*.md
+.gitmodules
