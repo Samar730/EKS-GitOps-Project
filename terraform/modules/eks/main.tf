@@ -95,9 +95,9 @@ resource "aws_eks_node_group" "main" {
     }
 
      depends_on = [
-        aws_iam_role_policy_attachment.example-AmazonEKSWorkerNodePolicy,
-        aws_iam_role_policy_attachment.example-AmazonEKS_CNI_Policy,
-        aws_iam_role_policy_attachment.example-AmazonEC2ContainerRegistryReadOnly,
+        aws_iam_role_policy_attachment.nodes-AmazonEKSWorkerNodePolicy,
+        aws_iam_role_policy_attachment.nodes-AmazonEKS_CNI_Policy,
+        aws_iam_role_policy_attachment.nodes-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
 
@@ -110,6 +110,8 @@ resource "aws_eks_addon" "vpc_cni" {
 resource "aws_eks_addon" "coredns" {
   cluster_name = aws_eks_cluster.main.name
   addon_name   = "coredns"
+
+  depends_on = [ aws_eks_node_group.main ]
 }
 
 resource "aws_eks_addon" "kube_proxy" {
