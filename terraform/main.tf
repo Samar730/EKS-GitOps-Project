@@ -12,6 +12,15 @@ module "vpc" {
   internet_cidr        = var.internet_cidr
 }
 
+module "eks" {
+  source = "./modules/eks"
+
+  project_name        = var.project_name
+  kubernetes_version  = var.kubernetes_version
+  public_subnet_ids   = module.vpc.public_subnet_ids
+  private_subnet_ids  = module.vpc.private_subnet_ids
+}
+
 module "sg" {
   source = "./modules/sg"
 
@@ -24,15 +33,6 @@ module "sg" {
   port_DNS               = var.port_DNS
   port_rds               = var.port_rds
   internet_cidr          = var.internet_cidr
-}
-
-module "eks" {
-  source = "./modules/eks"
-
-  project_name        = var.project_name
-  kubernetes_version  = var.kubernetes_version
-  public_subnet_ids   = module.vpc.public_subnet_ids
-  private_subnet_ids  = module.vpc.private_subnet_ids
 }
 
 module "rds" {
