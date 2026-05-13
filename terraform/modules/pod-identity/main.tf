@@ -1,0 +1,61 @@
+# Fetch the Route53 hosted zone for cloudbysamar.com
+data "aws_route53_zone" "main" {
+    name = var.domain_name
+    private_zone = false # determines that it is resolvable from the internet
+}
+
+# Create the IAM role for ExternalDNS
+resource "aws_iam_role" "pod_identity_external_dns" {
+  name = "${var.project_name}-externaldns-role"
+
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["sts:AssumeRole", "sts:TagSession"]
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+# IAM Policy -> Necessary actions needed by ExternalDNS to perform Route53 permissions
+resource "aws_iam_policy" "external_dns_policy" {
+    name = "${var.project_name}-externaldns-policy"
+    
+     policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:route53:::hostedzone/${data.aws_route53_zone.main.zone_id}"
+]
+    }
+    ]
+  })
+}
+
+# Attach the policy to the IAM role 
+resource "aws_iam_role_policy_attachment" "external_dns_policy_attachment" {
+    policy_arn = aws_iam_policy.external_dns_policy.arn
+    role = aws_iam_role.pod_identity_external_dns.name
+}
+
+#  links the IAM role to the ExternalDNS service account inside the cluster
+resource "aws_eks_pod_identity_association" "external_dns" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "kube-system"
+  service_account = "external-dns"
+  role_arn        = aws_iam_role.pod_identity_external_dns.arn
+}
