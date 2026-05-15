@@ -89,7 +89,7 @@ resource "aws_security_group" "rds" {
 # RDS SG Ingress -> only accepts inbound traffic from the node SG on port 5432
 resource "aws_vpc_security_group_ingress_rule" "rds_sg_ingress" {
     security_group_id = aws_security_group.rds.id
-    referenced_security_group_id = aws_security_group.eks_nodes.id
+    referenced_security_group_id = var.eks_cluster_default_sg
 
     from_port = var.port_rds
     to_port = var.port_rds
