@@ -20,7 +20,7 @@ spec:
         - name: memos
           image: 821868546219.dkr.ecr.eu-west-2.amazonaws.com/eks-memos:latest
           ports:
-          - containerPort: 5230
+          - containerPort: 8081
           env:
           - name: MEMOS_DRIVER
             value: postgres

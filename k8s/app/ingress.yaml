@@ -18,4 +18,4 @@ spec:
          service:
           name: memos-service
           port:
-            number: 5230
+            number: 8081

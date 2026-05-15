@@ -11,5 +11,5 @@ spec:
     app: memos
   type: ClusterIP
   ports:
-  - port: 5230
-    targetPort: 5230
+  - port: 8081
+    targetPort: 8081
