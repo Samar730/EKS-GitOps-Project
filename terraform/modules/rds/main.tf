@@ -19,6 +19,7 @@ resource "aws_db_instance" "postgresql" {
   username             = var.username
   password             = var.password
   skip_final_snapshot  = true
+  identifier           = "memos-db" # Static identifier ensures the RDS endpoint remains consistent across destroy/recreate cycles
   vpc_security_group_ids = var.rds_sg_id 
 
   tags = {
