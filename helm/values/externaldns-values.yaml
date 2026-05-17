@@ -1,12 +1,14 @@
-provider: 
+provider: # Use AWS Route53 as the DNS provider
   name: aws
 
+# Restrict ExternalDNS to only manage records for this domain
+# Prevents accidental modification of other hosted zones
 domainFilters: 
   - cloudbysamar.com
 
 txtOwnerId: eks-memos
 
-sources:
+sources: # Watch Ingress resources for hostnames to create Route53 records for
   - ingress
 
 policy: sync

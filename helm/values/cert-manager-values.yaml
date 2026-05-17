@@ -1,2 +1,4 @@
+# Install CertManager CRDs (Custom Resource Definitions) as part of the Helm release
+# Required for Kubernetes to recognise CertManager resources like ClusterIssuer and Certificate
 crds:
-  enabled: true
+  enabled: true 

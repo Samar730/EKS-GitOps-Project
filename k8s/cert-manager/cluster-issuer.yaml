@@ -1,14 +1,15 @@
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: ClusterIssuer   # ClusterIssuer is cluster-wide — one issuer covers all namespaces (memos, argocd, grafana etc)
 metadata: 
   name: letsencrypthttps
 spec: 
   acme: 
     email: samar.akbari1@gmail.com
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: https://acme-v02.api.letsencrypt.org/directory # Let's Encrypt production server — issues fully trusted certificates
     privateKeySecretRef:
-      name: letsencrypt-https-account-key
-    solvers:
+      name: letsencrypt-https-account-key # Kubernetes Secret where CertManager stores the Let's Encrypt account private key
+    solvers: # HTTP01 challenge — Let's Encrypt verifies domain ownership by hitting a temporary URL
+      # CertManager creates a temporary pod and Ingress rule to serve the verification file
       - http01:
-          ingress:
+          ingress: # Traefik handles the HTTP01 challenge routing
             ingressClassName: traefik
