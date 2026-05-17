@@ -6,9 +6,14 @@ metadata:
   labels: 
     app: memos
   annotations:
-    kubernetes.io/ingress.class: traefik
+    kubernetes.io/ingress.class: traefik # Specifies Traefik as the ingress controller to handle this resource
+    cert-manager.io/cluster-issuer: letsencrypthttps # Tells CertManager to automatically issue a certificate using the letsencrypthttps ClusterIssuer
 spec: 
   ingressClassName: traefik
+  tls: # TLS configuration — CertManager will issue a certificate and store it in the memos-tls Secret
+  - hosts: 
+    - memos.cloudbysamar.com
+    secretName: memos-tls
   rules: 
    - host: memos.cloudbysamar.com
      http: 
