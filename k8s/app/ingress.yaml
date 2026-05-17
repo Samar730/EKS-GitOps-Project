@@ -10,7 +10,8 @@ metadata:
 spec: 
   ingressClassName: traefik
   rules: 
-  - http: 
+   - host: memos.cloudbysamar.com
+     http: 
       paths: 
       - path: /
         pathType: Prefix 

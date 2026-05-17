@@ -123,3 +123,16 @@ resource "aws_eks_addon" "pod_identity" {
   cluster_name = aws_eks_cluster.main.name
   addon_name = "eks-pod-identity-agent"
 }
+
+# EKS OIDC Provider — enables Pod Identity/IRSA so pods can assume IAM roles
+# Dynamically reads the OIDC issuer URL from the cluster so it stays in sync
+# across destroy/recreate cycles without manual intervention
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}

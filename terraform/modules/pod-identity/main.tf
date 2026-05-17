@@ -28,22 +28,26 @@ resource "aws_iam_role" "pod_identity_external_dns" {
 resource "aws_iam_policy" "external_dns_policy" {
     name = "${var.project_name}-externaldns-policy"
     
-     policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "route53:ChangeResourceRecordSets",
-          "route53:ListHostedZones",
-          "route53:ListResourceRecordSets"
-        ]
-        Effect   = "Allow"
-        Resource = [
-          "arn:aws:route53:::hostedzone/${data.aws_route53_zone.main.zone_id}"
-]
-    }
-    ]
-  })
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          # ListHostedZones must target * as it is a global action not specific to a zone
+          Effect   = "Allow"
+          Action   = ["route53:ListHostedZones"]
+          Resource = "*"
+        },
+        {
+          # Record set actions are scoped to the specific hosted zone only
+          Effect   = "Allow"
+          Action   = [
+            "route53:ChangeResourceRecordSets",
+            "route53:ListResourceRecordSets"
+          ]
+          Resource = "arn:aws:route53:::hostedzone/${data.aws_route53_zone.main.zone_id}"
+        }
+      ]
+    })
 }
 
 # Attach the policy to the IAM role 
@@ -55,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "external_dns_policy_attachment" {
 #  links the IAM role to the ExternalDNS service account inside the cluster
 resource "aws_eks_pod_identity_association" "external_dns" {
   cluster_name    = var.eks_cluster_name
-  namespace       = "kube-system"
+  namespace       = "external-dns"
   service_account = "external-dns"
   role_arn        = aws_iam_role.pod_identity_external_dns.arn
 }
