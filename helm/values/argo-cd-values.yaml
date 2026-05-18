@@ -1,0 +1,3 @@
+server: # Traefik handles TLS termination externally so ArgoCD runs in insecure mode internally
+  extraArgs:
+    - --insecure
