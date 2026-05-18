@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Samar730/<your-repo-name>
+    repoURL: https://github.com/Samar730/EKS-GitOps-Project
     targetRevision: main
     path: k8s
   destination:
