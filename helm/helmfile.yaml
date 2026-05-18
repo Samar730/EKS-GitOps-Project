@@ -8,6 +8,9 @@ repositories:
   - name: cert-manager
     url: https://charts.jetstack.io
 
+  - name: argo-cd
+    url: https://argoproj.github.io/argo-helm
+
 releases:
   - name: traefik
     namespace: traefik
@@ -32,3 +35,11 @@ releases:
     version: 1.20.2
     values:
       - values/cert-manager-values.yaml
+
+  - name: argo-cd
+    namespace: argo-cd
+    createNamespace: true
+    chart: argo-cd/argo-cd
+    version: 9.5.14
+    values:
+      - values/argo-cd-values.yaml
