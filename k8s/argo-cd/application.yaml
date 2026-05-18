@@ -9,6 +9,8 @@ spec:
     repoURL: https://github.com/Samar730/EKS-GitOps-Project
     targetRevision: main
     path: k8s
+    directory:
+      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: memos
