@@ -1,0 +1,78 @@
+name: CI - Build, Scan & Push 
+
+on: 
+  push:
+    branches:
+      - main
+
+    paths:
+      - "Dockerfile"
+      - "app/**"
+
+# Runner Preparations
+permissions:
+  id-token: write # Allows pipelines to auth into AWS using OIDC
+  contents: write # Allows pipeline to push commits back to repo
+
+concurrency: # Prevents pipelines running simultaneously
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env: 
+  AWS_REGION: eu-west-2
+  ECR_REGISTRY: 821868546219.dkr.ecr.eu-west-2.amazonaws.com
+
+jobs:
+  Build-Scan-Push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code 
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: login to ECR 
+        id: login-ecr # References ECR Registry dynamically for use in subsequent steps
+        uses: aws-actions/amazon-ecr-login@v2 
+
+# Build Docker Image
+      - name: Build Docker Image
+        id: build # Reference Image URI dynamically for use in subsequent steps
+        run: |
+          IMAGE="${{ env.ECR_REGISTRY }}/eks-memos:${GITHUB_SHA::7}"
+          docker build -t "$IMAGE" .
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+# Scan Docker Image using Grype for Vulnerabilities
+      - name: Grype scan image (fail on HIGH/CRITICAL)
+        uses: anchore/scan-action@v7
+        with:
+          image: ${{ steps.build.outputs.image}}
+          fail-build: true
+          severity-cutoff: high
+          only-fixed: true
+
+# Push Docker Image to ECR 
+      - name: Push image to ECR
+        run: docker push ${{ steps.build.outputs.image }}
+        
+# Update Image tag in deployment.yaml manifest in k8s/app/
+      - name: Update image tag in deployment.yaml 
+        run: |
+          sed -i "s|eks-memos:.*|eks-memos:${GITHUB_SHA::7}|" k8s/app/deployment.yaml
+
+# Commit and push back to git for GitOps workflow
+      - name: Commit and push back to git
+        run: |
+           git config user.email "actions@github.com"
+           git config user.name "GitHub Actions"
+           git add k8s/app/deployment.yaml
+           git commit -m "CI: update image tag to ${GITHUB_SHA::7}"
+           git push
