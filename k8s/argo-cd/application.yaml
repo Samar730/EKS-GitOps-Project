@@ -26,8 +26,10 @@ spec:
     jsonPointers:
     - /status
 
-  # ESO updates ClusterSecretStore status fields after ArgoCD syncs — ignore to prevent constant OutOfSync
+  # ESO strips and rewrites auth block and adds sessionTagsPolicy — ignore to prevent constant OutOfSync
   - group: external-secrets.io
     kind: ClusterSecretStore
     jsonPointers:
     - /status
+    - /spec/provider/aws/auth
+    - /spec/provider/aws/sessionTagsPolicy
