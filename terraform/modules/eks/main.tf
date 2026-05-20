@@ -124,7 +124,7 @@ resource "aws_eks_addon" "pod_identity" {
   addon_name = "eks-pod-identity-agent"
 }
 
-# EKS OIDC Provider — enables Pod Identity/IRSA so pods can assume IAM roles
+# EKS OIDC Provider — enables Pod Identity so pods can assume IAM roles
 # Dynamically reads the OIDC issuer URL from the cluster so it stays in sync
 # across destroy/recreate cycles without manual intervention
 data "tls_certificate" "eks" {

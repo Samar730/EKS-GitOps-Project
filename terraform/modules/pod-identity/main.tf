@@ -63,3 +63,53 @@ resource "aws_eks_pod_identity_association" "external_dns" {
   service_account = "external-dns"
   role_arn        = aws_iam_role.pod_identity_external_dns.arn
 }
+
+# IAM Role for ESO -> handles RDS Credentials with external service
+resource "aws_iam_role" "eso" {
+   name = "${var.project_name}-eso-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["sts:AssumeRole", "sts:TagSession"]
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+# IAM Policy -> Necessary actions needed by ESO to handle external secrets
+resource "aws_iam_policy" "eso_policy" {
+  name = "${var.project_name}-eso-policy"
+
+  policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect   = "Allow"
+          Action   = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+          ]
+          Resource = "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-dsn*"
+        }
+      ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "eso_policy_attachment" {
+  policy_arn = aws_iam_policy.eso_policy.arn
+  role = aws_iam_role.eso.name
+}
+
+resource "aws_eks_pod_identity_association" "eso_pod_identity" {
+  cluster_name    = var.eks_cluster_name
+  namespace       = "external-secrets"
+  service_account = "external-secrets"
+  role_arn        = aws_iam_role.eso.arn
+}
