@@ -103,8 +103,12 @@ resource "aws_iam_role_policy" "github_actions_policy" {
         # Allows pipeline to retrieve db password before terraform apply
         Effect = "Allow"
         Action = ["secretsmanager:GetSecretValue"]
-        Resource = "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-password*"
+        Resource = [
+          "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-password*",
+          "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-username*"
+        ]
       },
+      
       {
         # Allows pipeline to provision all AWS infrastructure via Terraform
         Effect = "Allow"
