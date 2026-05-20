@@ -20,3 +20,8 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+  ignoreDifferences: # ESO updates ExternalSecret status fields after ArgoCD syncs — ignore to prevent constant OutOfSync
+  - group: external-secrets.io
+    kind: ExternalSecret
+    jsonPointers:
+    - /status
