@@ -33,9 +33,8 @@ jobs:
 
       - name: Install helmfile
         run: |
-          curl -fsSL https://github.com/helmfile/helmfile/releases/latest/download/helmfile_linux_amd64.tar.gz | tar xz
+          curl -fsSL https://github.com/helmfile/helmfile/releases/download/v0.169.2/helmfile_linux_amd64.tar.gz | tar xz
           sudo mv helmfile /usr/local/bin/helmfile
-
       - name: Connect to EKS Cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
 
