@@ -56,6 +56,15 @@ jobs:
       - name: Terraform Validate
         run: terraform validate 
 
+      - name: Get DB Password from Secrets Manager
+        run: |
+          DB_PASSWORD=$(aws secretsmanager get-secret-value \
+            --secret-id memos-db-password \
+            --query SecretString \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          echo "TF_VAR_db_password=$DB_PASSWORD" >> $GITHUB_ENV
+
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
         run: terraform plan
