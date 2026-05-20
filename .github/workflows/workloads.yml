@@ -1,0 +1,49 @@
+name: Workloads - Bootstrap Cluster
+
+on:
+  workflow_dispatch:
+    
+# Runner Preparations
+permissions: 
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install Kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install helmfile
+        run: |
+          curl -fsSL https://github.com/helmfile/helmfile/releases/latest/download/helmfile_linux_amd64.tar.gz | tar xz
+          sudo mv helmfile /usr/local/bin/helmfile
+
+      - name: Connect to EKS Cluster
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
+
+      - name: Helmfile Apply 
+        run: helmfile apply 
+
+      - name: Create Memos Namespace
+        run: kubectl create namespace memos --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Setup ArgoCD
+        run: kubectl apply -f k8s/argo-cd/application.yaml
