@@ -1,24 +1,24 @@
 module "vpc" {
   source = "./modules/vpc"
 
-  project_name         = var.project_name
-  cidr_block           = var.cidr_block
-  public_subnet_a_cidr = var.public_subnet_a_cidr
-  public_subnet_b_cidr = var.public_subnet_b_cidr
+  project_name          = var.project_name
+  cidr_block            = var.cidr_block
+  public_subnet_a_cidr  = var.public_subnet_a_cidr
+  public_subnet_b_cidr  = var.public_subnet_b_cidr
   private_subnet_a_cidr = var.private_subnet_a_cidr
   private_subnet_b_cidr = var.private_subnet_b_cidr
-  az_1                 = var.az_1
-  az_2                 = var.az_2
-  internet_cidr        = var.internet_cidr
+  az_1                  = var.az_1
+  az_2                  = var.az_2
+  internet_cidr         = var.internet_cidr
 }
 
 module "eks" {
   source = "./modules/eks"
 
-  project_name        = var.project_name
-  kubernetes_version  = var.kubernetes_version
-  public_subnet_ids   = module.vpc.public_subnet_ids
-  private_subnet_ids  = module.vpc.private_subnet_ids
+  project_name       = var.project_name
+  kubernetes_version = var.kubernetes_version
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  private_subnet_ids = module.vpc.private_subnet_ids
 }
 
 module "sg" {
@@ -38,7 +38,7 @@ module "sg" {
 module "rds" {
   source = "./modules/rds"
 
-  project_name      = var.project_name
+  project_name       = var.project_name
   private_subnet_ids = module.vpc.private_subnet_ids
   allocated_storage  = var.allocated_storage
   engine_version     = var.engine_version

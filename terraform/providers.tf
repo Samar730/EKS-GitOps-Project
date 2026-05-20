@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket = "eks-memos-tfstate"
-    key    = "terraform.tfstate"
-    region = "eu-west-2"
+    bucket       = "eks-memos-tfstate"
+    key          = "terraform.tfstate"
+    region       = "eu-west-2"
     use_lockfile = true
   }
 
@@ -15,5 +15,5 @@ terraform {
 }
 
 provider "aws" {
-    region = var.aws_region
+  region = var.aws_region
 }
