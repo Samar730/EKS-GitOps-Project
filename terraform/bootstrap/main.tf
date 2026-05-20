@@ -98,7 +98,29 @@ resource "aws_iam_role_policy" "github_actions_policy" {
           aws_s3_bucket.terraform_state.arn,
           "${aws_s3_bucket.terraform_state.arn}/*"
         ]
+      },
+      {
+        # Allows pipeline to retrieve db password before terraform apply
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-password*"
+      },
+      {
+        # Allows pipeline to provision all AWS infrastructure via Terraform
+        Effect = "Allow"
+        Action = [
+          "ec2:*",
+          "eks:*",
+          "rds:*",
+          "iam:*",
+          "route53:*",
+          "elasticloadbalancing:*",
+          "autoscaling:*",
+          "logs:*",
+          "kms:*"
+        ]
+        Resource = "*"
       }
-       ]
+    ]
   })
 }
