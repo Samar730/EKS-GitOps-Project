@@ -25,3 +25,9 @@ spec:
     kind: ExternalSecret
     jsonPointers:
     - /status
+
+  # ESO updates ClusterSecretStore status fields after ArgoCD syncs — ignore to prevent constant OutOfSync
+  - group: external-secrets.io
+    kind: ClusterSecretStore
+    jsonPointers:
+    - /status
