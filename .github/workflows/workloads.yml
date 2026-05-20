@@ -40,6 +40,9 @@ jobs:
           sudo install helmfile /usr/local/bin/helmfile
           helmfile --version
 
+      - name: Install helm-diff plugin
+        run: helm plugin install https://github.com/databus23/helm-diff
+
       - name: Connect to EKS Cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
 
