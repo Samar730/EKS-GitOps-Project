@@ -36,5 +36,21 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Get DB Credentials from Secrets Manager
+        run: |
+          DB_PASSWORD=$(aws secretsmanager get-secret-value \
+            --secret-id memos-db-password \
+            --query SecretString \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          echo "TF_VAR_db_password=$DB_PASSWORD" >> $GITHUB_ENV
+
+          DB_USERNAME=$(aws secretsmanager get-secret-value \
+            --secret-id memos-db-username \
+            --query SecretString \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          echo "TF_VAR_db_username=$DB_USERNAME" >> $GITHUB_ENV
+
       - name: Terraform Destroy 
         run: terraform destroy -auto-approve
