@@ -33,9 +33,11 @@ jobs:
 
       - name: Install helmfile
         run: |
-          curl -L https://github.com/helmfile/helmfile/releases/latest/download/helmfile_linux_amd64 -o /usr/local/bin/helmfile
-          chmod +x /usr/local/bin/helmfile
-          
+          curl -fsSL https://baltocdn.com/helmfile/signing.asc | sudo gpg --dearmor -o /usr/share/keyrings/helmfile-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/helmfile-archive-keyring.gpg] https://baltocdn.com/helmfile/deb/stable/ all main" | sudo tee /etc/apt/sources.list.d/helmfile.list
+          sudo apt-get update
+          sudo apt-get install helmfile -y
+
       - name: Connect to EKS Cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
 
