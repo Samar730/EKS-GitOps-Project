@@ -58,6 +58,7 @@ releases:
     version: 85.1.3
     values:
       - values/prometheus-values.yaml
+    disableValidation: true # Skips helm diff for this release —> CRDs don't exist on fresh cluster causing diff to fail
 
   - name: external-secrets
     namespace: external-secrets
