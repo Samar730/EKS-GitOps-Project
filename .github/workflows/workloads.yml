@@ -37,12 +37,13 @@ jobs:
           tar -xzf helmfile.tar.gz helmfile
           sudo install helmfile /usr/local/bin/helmfile
           helmfile --version
-          
+
       - name: Connect to EKS Cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
 
       - name: Helmfile Apply 
         run: helmfile apply 
+        working-directory: helm
 
       - name: Create Memos Namespace
         run: kubectl create namespace memos --dry-run=client -o yaml | kubectl apply -f -
