@@ -1,0 +1,30 @@
+name: Workloads - Destroy NLB 
+
+on:
+  workflow_dispatch:
+    
+# Runner Preparations
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  destroy-nlb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6.1.0 
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete NLB
+        run: |
+          NLB_ARN=$(aws elbv2 describe-load-balancers --region ${{ env.AWS_REGION }} --query 'LoadBalancers[0].LoadBalancerArn' --output text)
+          aws elbv2 delete-load-balancer --load-balancer-arn $NLB_ARN --region ${{ env.AWS_REGION }}
+        # Retrieve NLB ARN dynamically —> changes every recreate so cannot be hardcoded
+        # Delete NLB before terraform destroy —> created by Helm outside Terraform's control
