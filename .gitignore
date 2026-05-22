@@ -5,4 +5,3 @@
 *.tfvars
 .terraform.lock.hcl
 k8s/app/secrets.yaml
-helm/values/prometheus-values.yaml
