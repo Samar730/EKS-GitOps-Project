@@ -106,7 +106,8 @@ resource "aws_iam_role_policy" "github_actions_policy" {
         Resource = [
           "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-password*",
           "arn:aws:secretsmanager:eu-west-2:821868546219:secret:memos-db-username*",
-          "arn:aws:secretsmanager:eu-west-2:821868546219:secret:grafana-admin-password*"
+          "arn:aws:secretsmanager:eu-west-2:821868546219:secret:grafana-admin-password*",
+          "arn:aws:secretsmanager:eu-west-2:821868546219:secret:admin-iam-arn*"
         ]
       },
       
