@@ -19,6 +19,7 @@ module "eks" {
   kubernetes_version = var.kubernetes_version
   public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
+  admin_iam_arn      = var.admin_iam_arn
 }
 
 module "sg" {

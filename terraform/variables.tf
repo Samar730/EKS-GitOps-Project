@@ -81,6 +81,11 @@ variable "kubernetes_version" {
   default = "1.35"
 }
 
+variable "admin_iam_arn" {
+  type = string
+  description = "IAM user ARN to grant cluster admin access"
+}
+
 # RDS Variables
 variable "allocated_storage" {
   type    = number

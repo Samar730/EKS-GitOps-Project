@@ -18,3 +18,8 @@ variable "private_subnet_ids" {
   type        = list(string)
   description = "Private Subnet IDs"
 }
+
+variable "admin_iam_arn" {
+  type = string
+  description = "IAM user ARN to grant cluster admin access"
+}

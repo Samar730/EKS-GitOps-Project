@@ -136,3 +136,23 @@ resource "aws_iam_openid_connect_provider" "eks" {
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
   url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
+
+# Grant local IAM user admin access to the cluster
+# Required because the cluster is provisioned via GitHub Actions pipeline (OIDC role)
+# which means only the pipeline role gets access by default — not the local IAM user
+resource "aws_eks_access_entry" "admin" {
+  cluster_name = aws_eks_cluster.main.name
+  principal_arn = var.admin_iam_arn
+}
+
+# Associate cluster admin policy to the IAM user
+# AmazonEKSClusterAdminPolicy grants full cluster-wide kubectl access
+resource "aws_eks_access_policy_association" "admin" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = var.admin_iam_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
