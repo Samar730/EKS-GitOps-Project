@@ -46,18 +46,6 @@ jobs:
       - name: Connect to EKS Cluster
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name eks-memos-cluster
 
-      - name: Generate Prometheus Values
-        run: |
-          GRAFANA_PASSWORD=$(aws secretsmanager get-secret-value \
-            --secret-id grafana-admin-password \
-            --query SecretString \
-            --output text \
-            --region ${{ env.AWS_REGION }})
-          cat <<EOF > helm/values/prometheus-values.yaml
-          grafana:
-            adminPassword: $GRAFANA_PASSWORD
-          EOF
-
       - name: Helmfile Apply 
         run: helmfile apply 
         working-directory: helm
