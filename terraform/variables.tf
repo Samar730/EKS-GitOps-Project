@@ -82,7 +82,7 @@ variable "kubernetes_version" {
 }
 
 variable "admin_iam_arn" {
-  type = string
+  type        = string
   description = "IAM user ARN to grant cluster admin access"
 }
 
