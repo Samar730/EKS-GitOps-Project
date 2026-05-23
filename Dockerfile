@@ -61,3 +61,5 @@ USER appuser
 EXPOSE 8081
 
 ENTRYPOINT ["./memos"]
+
+# Trigger ci test 
