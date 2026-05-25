@@ -188,3 +188,123 @@ All pipelines authenticate with AWS using OIDC, no static credentials are stored
 ArgoCD is deployed into the cluster via Helmfile and configured to watch the Git repository. When the CI pipeline commits an updated image tag to `k8s/app/deployment.yaml`, ArgoCD detects the change within 3 minutes and triggers a rolling deployment to the cluster. Any drift between the cluster state and the Git state is automatically corrected, ensuring the cluster always reflects what is defined in the repository.
 
 ## Screenshots
+
+### Memos Application
+![Memos App](docs/memos-app.png)
+
+The Memos application running at memos.cloudbysamar.com, connected to RDS PostgreSQL via a database connection string retrieved automatically from AWS Secrets Manager by the External Secrets Operator.
+
+### ArgoCD
+![ArgoCD](docs/argocd.png)
+
+ArgoCD showing the memos application Synced and Healthy with 16 resources under management. The last sync was triggered automatically by the CI pipeline committing an updated image tag to the deployment manifest, demonstrating the full GitOps loop from code push to live deployment.
+
+### Grafana
+![Grafana](docs/grafana.png)
+
+Grafana displaying live cluster metrics from the kube-prometheus-stack, showing network bandwidth and packet rates across all namespaces.
+
+### Prometheus
+![Prometheus](docs/prometheus.png)
+
+Prometheus target health page showing all scrape targets UP and being scraped successfully across the cluster.
+
+### CI Pipeline
+![CI Pipeline](docs/ci-pipeline.png)
+
+The CI pipeline running successfully, building the Docker image, scanning with Grype and pushing to ECR before updating the deployment manifest with the new commit SHA.
+
+## How to Deploy
+
+**1. Bootstrap**
+
+Sets up the remote state backend, ECR repository and OIDC authentication:
+cd terraform/bootstrap
+terraform init
+terraform apply
+
+**2. Configure GitHub Secrets**
+
+Add the following secrets to your GitHub repository:
+
+- `AWS_ROLE_TO_ASSUME`: IAM role ARN output from bootstrap
+- `IAM_USER_ARN`: Your AWS IAM user ARN for EKS cluster access
+
+**3. Create AWS Secrets Manager Secrets**
+
+```
+aws secretsmanager create-secret \
+  --name memos-db-password \
+  --secret-string 'yourpassword' \
+  --region eu-west-2
+
+aws secretsmanager create-secret \
+  --name memos-db-username \
+  --secret-string 'memos' \
+  --region eu-west-2
+
+aws secretsmanager create-secret \
+  --name memos-dsn \
+  --secret-string 'postgresql://memos:yourpassword@<rds-endpoint>:5432/memos?sslmode=require' \
+  --region eu-west-2
+
+aws secretsmanager create-secret \
+  --name admin-iam-arn \
+  --secret-string 'arn:aws:iam::<account-id>:user/<username>' \
+  --region eu-west-2
+```
+
+**4. Provision Infrastructure**
+
+Trigger `cd.yml` manually via GitHub Actions and select `apply`.
+
+**5. Bootstrap the Cluster**
+
+Trigger `workloads.yml` manually via GitHub Actions.
+
+**6. Access the Cluster Locally**
+aws eks update-kubeconfig --region eu-west-2 --name eks-memos-cluster
+
+**7. Tear Down**
+
+Trigger `workloads-destroy.yml` first to delete the NLB, then trigger `tf-destroy.yml` to destroy all infrastructure.
+
+## Lessons Learned
+
+**EKS Access via OIDC Pipelines**
+
+When provisioning the EKS cluster through a GitHub Actions OIDC pipeline, only the pipeline IAM role is automatically granted cluster admin access. The local IAM user is not added by default, causing all local kubectl commands to be rejected. The fix was adding `aws_eks_access_entry` and `aws_eks_access_policy_association` resources to the EKS Terraform module, automatically granting the local IAM user cluster access on every provision.
+
+**Helm and Helmfile**
+
+Managing multiple Helm releases across a fresh cluster introduced several compatibility issues. The official Helmfile binary download URL was unreliable in CI, requiring a pinned version. Helm 4 removed the `--client` flag that Helmfile uses internally, causing a panic — resolved by pinning Helm to 3.17.0. The helm-diff plugin also required a pinned version to avoid compatibility errors.
+
+**Kubernetes Networking and Ingress**
+
+Configuring the full ingress chain from NLB through Traefik to the application pods required understanding how each layer interacts. CertManager HTTP01 challenges depend on ExternalDNS creating Route53 records first, meaning certificates only issue once DNS has propagated — understanding this dependency order was key to debugging certificate failures.
+
+## Future Improvements
+
+**Blue/Green Deployments**
+
+Implement blue/green deployment strategy using ArgoCD Rollouts to eliminate downtime during releases and enable instant rollback by switching traffic between two identical environments.
+
+**Multi-Environment Setup**
+
+Introduce separate dev and production environments with different cluster configurations, resource limits and scaling policies. Dev environment would use minimal node sizes and single AZ to reduce costs.
+
+**Cost Optimisation**
+
+Replace the Regional NAT Gateway with VPC endpoints for AWS services (ECR, S3, Secrets Manager) to eliminate NAT Gateway data processing charges for internal AWS traffic.
+
+**Enhanced Security**
+
+Add AWS WAF in front of the NLB to protect against common web exploits and DDoS attacks. Implement network policies to restrict pod-to-pod communication to only what is required. Add OPA/Gatekeeper for policy enforcement at the Kubernetes admission level.
+
+**Alerting**
+
+Configure Alertmanager with notification channels (Slack or PagerDuty) to alert on critical cluster events such as pod crashes, node pressure and certificate expiry.
+
+**Autoscaling**
+
+Implement Cluster Autoscaler or Karpenter for node-level autoscaling and Horizontal Pod Autoscaler for pod-level scaling based on CPU and memory metrics.
