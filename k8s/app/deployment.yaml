@@ -18,7 +18,7 @@ spec:
     spec: 
       containers:
         - name: memos
-          image: 821868546219.dkr.ecr.eu-west-2.amazonaws.com/eks-memos:a14dde7
+          image: 821868546219.dkr.ecr.eu-west-2.amazonaws.com/eks-memos:c17ba43
           ports:
           - containerPort: 8081
           env:
