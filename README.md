@@ -12,6 +12,7 @@
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![CertManager](https://img.shields.io/badge/CertManager-003EFF?style=for-the-badge&logo=letsencrypt&logoColor=white)
 ![ExternalDNS](https://img.shields.io/badge/ExternalDNS-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![ESO](https://img.shields.io/badge/External_Secrets_Operator-0F1689?style=for-the-badge&logo=kubernetes&logoColor=white)
 
 A production-grade Kubernetes platform deployed on AWS EKS, provisioned with Terraform and managed through a GitOps workflow using ArgoCD. The platform hosts a self-hosted Memos note-taking application with automated CI/CD pipelines, full observability stack and zero static credentials.
 
@@ -273,13 +274,13 @@ Trigger `workloads-destroy.yml` first to delete the NLB, then trigger `tf-destro
 
 **EKS Access via OIDC Pipelines**
 
-- When the EKS cluster is provisioned through a GitHub Actions OIDC pipeline, only the pipeline IAM role gets cluster access by default — not your local IAM user
+- When the EKS cluster is provisioned through a GitHub Actions OIDC pipeline, only the pipeline IAM role gets cluster access by default, not local IAM user
 - Fixed by adding `aws_eks_access_entry` and `aws_eks_access_policy_association` to the EKS Terraform module so the local user is granted access automatically on every provision
 
 **Helm and Helmfile in CI**
 
 - Helmfile requires a pinned version in CI as the latest download URL is unreliable
-- Helm 4 is not compatible with Helmfile — pinning Helm to 3.17.0 resolved the issue
+- Helm 4 is not compatible with Helmfile -> pinning Helm to 3.17.0 resolved the issue
 - The helm-diff plugin must also be pinned to avoid compatibility errors
 
 **Certificate Issuance**
