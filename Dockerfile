@@ -62,4 +62,4 @@ EXPOSE 8081
 
 ENTRYPOINT ["./memos"]
 
-# Trigger ci test 
+# Memos Dockerfile for trigger pipeline
