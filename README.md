@@ -12,7 +12,7 @@
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![CertManager](https://img.shields.io/badge/CertManager-003EFF?style=for-the-badge&logo=letsencrypt&logoColor=white)
 ![ExternalDNS](https://img.shields.io/badge/ExternalDNS-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
-![ESO](https://img.shields.io/badge/External_Secrets_Operator-0F1689?style=for-the-badge&logo=kubernetes&logoColor=white)
+![ESO](https://img.shields.io/badge/ESO-0F1689?style=for-the-badge&logo=kubernetes&logoColor=white)
 
 A production-grade Kubernetes platform deployed on AWS EKS, provisioned with Terraform and managed through a GitOps workflow using ArgoCD. The platform hosts a self-hosted Memos note-taking application with automated CI/CD pipelines, full observability stack and zero static credentials.
 
