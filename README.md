@@ -273,15 +273,23 @@ Trigger `workloads-destroy.yml` first to delete the NLB, then trigger `tf-destro
 
 **EKS Access via OIDC Pipelines**
 
-When provisioning the EKS cluster through a GitHub Actions OIDC pipeline, only the pipeline IAM role is automatically granted cluster admin access. The local IAM user is not added by default, causing all local kubectl commands to be rejected. The fix was adding `aws_eks_access_entry` and `aws_eks_access_policy_association` resources to the EKS Terraform module, automatically granting the local IAM user cluster access on every provision.
+- When the EKS cluster is provisioned through a GitHub Actions OIDC pipeline, only the pipeline IAM role gets cluster access by default — not your local IAM user
+- Fixed by adding `aws_eks_access_entry` and `aws_eks_access_policy_association` to the EKS Terraform module so the local user is granted access automatically on every provision
 
-**Helm and Helmfile**
+**Helm and Helmfile in CI**
 
-Managing multiple Helm releases across a fresh cluster introduced several compatibility issues. The official Helmfile binary download URL was unreliable in CI, requiring a pinned version. Helm 4 removed the `--client` flag that Helmfile uses internally, causing a panic — resolved by pinning Helm to 3.17.0. The helm-diff plugin also required a pinned version to avoid compatibility errors.
+- Helmfile requires a pinned version in CI as the latest download URL is unreliable
+- Helm 4 is not compatible with Helmfile — pinning Helm to 3.17.0 resolved the issue
+- The helm-diff plugin must also be pinned to avoid compatibility errors
 
-**Kubernetes Networking and Ingress**
+**Certificate Issuance**
 
-Configuring the full ingress chain from NLB through Traefik to the application pods required understanding how each layer interacts. CertManager HTTP01 challenges depend on ExternalDNS creating Route53 records first, meaning certificates only issue once DNS has propagated — understanding this dependency order was key to debugging certificate failures.
+- CertManager HTTP01 challenges only succeed after ExternalDNS has created the Route53 DNS records
+- Understanding this dependency order was key to debugging certificate failures during fresh cluster provisioning
+
+**Terraform State Locking**
+
+- Interrupting a pipeline mid-run leaves a state lock on the S3 backend requiring a manual `terraform force-unlock` before the next run
 
 ## Future Improvements
 
